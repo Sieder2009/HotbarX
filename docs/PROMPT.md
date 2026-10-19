@@ -1,0 +1,72 @@
+# HotbarX — Design prompts
+
+There are two copy-paste blocks here:
+
+- **Production brief:** the original request corrected for Minecraft 26.3. Hand it to a pixel artist or an AI agent that will make the actual files.
+- **Concept-art prompts:** for image generators. Use them for mood and direction only. Generators don't produce pixel-accurate 176×166 textures, so [`SPEC.md`](SPEC.md) governs every file that ships.
+
+## 1. Production brief
+
+```text
+Build a Minecraft Java Edition 26.3 resource pack (format 97.1, also loading in 26.2) called HotbarX, following docs/SPEC.md exactly.
+
+Look: matte obsidian-black UI (#0A0A0A) with subtle blood-red borders (#990000). Vibrant crimson (#FF0000)
+is used only for glow, the selected hotbar slot, hover states and lightning. Dark fantasy, clean, on the
+1x vanilla pixel grid. Use only the palette tokens in SPEC.md section 4 (every colour has G = B).
+No gold, yellow, orange, bronze, copper or brown pixel anywhere.
+
+Deliver:
+1. Containers (static): inventory.png, generic_54.png, shulker_box.png, crafting_table.png.
+   Black frames with crimson borders, slots outlined in dark crimson, thin 1-px red lightning arcs
+   crackling along the outer 4-px border. Respect the generic_54 seam rule and the text-safe zones.
+2. Container labels ("Crafting", "Inventory", "Shulker Box", ...) in crimson via the text.vsh
+   recolor (SPEC 5.6).
+3. Armor and shield slot placeholders: obsidian silhouettes with red outlines.
+4. Hotbar sprites: matte black cells, a glowing crimson selection frame, and animated lightning
+   along the top and bottom bands that links the slots through the separators. Follow the anchor
+   rule so the arcs plug into the selection frame on any slot.
+5. Buttons: dark slate/obsidian with crimson trim, sparks only in the 3x3 corners. Pause-menu text
+   in crimson via lang ("Resume Game", "Options...").
+6. Items: netherite sword, pickaxe and axe as blackened obsidian with glowing crimson edges.
+   Golden apple becomes a crimson "Blood Apple" (texture + red name). Potion bottles and the eye
+   of ender crackle with red sparks.
+7. Absorption hearts recoloured crimson/black.
+
+Done when `tools/Test-Palette.ps1 pack -Strict` exits 0 and every in-game check in SPEC section 12 passes.
+```
+
+## 2. Concept-art prompts
+
+**Master prompt**
+
+```text
+Minecraft Java Edition GUI resource pack concept sheet, crisp pixel art, nearest-neighbor pixels,
+flat orthographic UI, no perspective. Dark fantasy theme: matte obsidian-black panels (#0A0A0A),
+thin dark blood-red borders (#990000), vibrant crimson (#FF0000) glow accents. Jagged one-pixel
+electric-red lightning arcs with pale pink-white cores crackle along the outer edges of every panel
+and link the nine hotbar slots, with a faint red aura around the arcs. Shown: player inventory with
+crafting grid, six-row chest, hotbar with the selected slot glowing crimson, "Resume Game" and
+"Options" buttons with crimson text, item icons of an obsidian-black sword, pickaxe and axe with
+glowing crimson edges, a glowing crimson blood apple, a potion and an eye of ender crackling with
+red sparks. Clean, high contrast, readable, minimal.
+```
+
+**Negative prompt**
+
+```text
+gold, golden, yellow, amber, orange, bronze, brass, copper, brown, beige, warm highlights, gold trim,
+metallic gold, purple, blue, green, blur, soft gradient, painterly, photorealistic, 3D render,
+perspective, glossy plastic, bloom, lens flare, text artifacts, watermark, logo
+```
+
+**Per-asset variants.** Append one of these to the master prompt:
+
+| Asset | Append |
+|---|---|
+| Inventory | `close-up of the player inventory screen only, 176 by 166 pixel proportions, empty slots` |
+| Chest | `six-row chest screen only, tall panel, lightning concentrated at the corners` |
+| Hotbar | `wide strip of nine square slots, third slot selected with a glowing crimson frame, lightning running along the top and bottom edges and jumping between slots` |
+| Buttons | `two wide rectangular buttons stacked, normal and hovered states, crimson text` |
+| Icons | `sheet of 16 by 16 pixel item icons on a dark slot background, large and centered` |
+
+**Using the output.** Judge generated images only on colour, density and composition. Then rebuild them as pixel art at the exact sizes in `SPEC.md`, using the palette tokens. Downscaling a generated image never produces clean pixel art and usually lets warm colours leak in.

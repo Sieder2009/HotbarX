@@ -1,0 +1,12 @@
+{
+  "pack": {
+    "description": { "text": "HotbarX - Crimson Obsidian UI", "color": "#FF0000" },
+    "min_format": 88,
+    "max_format": 97
+  },
+  "overlays": {
+    "entries": [
+      { "min_format": 88, "max_format": 88, "directory": "mc_26_2" }
+    ]
+  }
+}

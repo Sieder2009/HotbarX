@@ -1,0 +1,14 @@
+{
+  "menu.returnToGame": "§cResume Game",
+  "menu.options": "§cOptions...",
+  "menu.shareToLan": "§cOpen to LAN",
+  "menu.feedback": "§cFeedback...",
+  "menu.server_links": "§cServer Links...",
+  "menu.playerReporting": "§cPlayer Reporting",
+  "menu.returnToMenu": "§cSave and Quit to Title",
+  "menu.disconnect": "§cDisconnect",
+  "gui.advancements": "§cAdvancements",
+  "gui.stats": "§cStatistics",
+  "item.minecraft.golden_apple": "§cBlood Apple",
+  "item.minecraft.enchanted_golden_apple": "Enchanted Blood Apple"
+}
