@@ -17,8 +17,10 @@ No gold, yellow, orange, bronze, copper or brown pixel anywhere.
 
 Deliver:
 1. Containers (static): inventory.png, generic_54.png, shulker_box.png, crafting_table.png.
-   Black frames with crimson borders, slots outlined in dark crimson, thin 1-px red lightning arcs
-   crackling along the outer 4-px border. Respect the generic_54 seam rule and the text-safe zones.
+   Black frames edged by one thin crimson line that glows inward, quiet slots outlined in dark crimson,
+   and jagged 1-px red lightning with one white-hot strike point per bolt: crackling along about half
+   of the outer border, across the free channels between slot groups, and through the empty areas of
+   the inventory and crafting table. Respect the generic_54 seam rule and the text-safe zones.
 2. Container labels ("Crafting", "Inventory", "Shulker Box", ...) in crimson via the text.vsh
    recolor (SPEC 5.6).
 3. Armor and shield slot placeholders: obsidian silhouettes with red outlines.
@@ -27,10 +29,13 @@ Deliver:
    rule so the arcs plug into the selection frame on any slot.
 5. Buttons: dark slate/obsidian with crimson trim, sparks only in the 3x3 corners. Pause-menu text
    in crimson via lang ("Resume Game", "Options...").
-6. Items: netherite sword, pickaxe and axe as blackened obsidian with glowing crimson edges.
-   Golden apple becomes a crimson "Blood Apple" (texture + red name). Potion bottles and the eye
-   of ender crackle with red sparks.
-7. Absorption hearts recoloured crimson/black.
+6. Items: golden apple becomes a crimson "Blood Apple" (texture + red name). Potion bottles and
+   the eye of ender crackle with red sparks. Tools (swords, pickaxes, axes) stay vanilla.
+7. Status bars: crimson glossy hearts, blood-red drumsticks, obsidian armor with a crimson rim, and an
+   animated crimson XP bar with lightning (the lightning outside the 9 slots). Absorption hearts
+   crimson/black. Poisoned, withered and frozen hearts stay vanilla.
+8. Recipe book: obsidian panel with lightning frame, crimson search lens, red book button, tabs,
+   toggles, page arrows and variant popup. Craftable recipes glow; uncraftable ones go dim.
 
 Done when `tools/Test-Palette.ps1 pack -Strict` exits 0 and every in-game check in SPEC section 12 passes.
 ```
@@ -45,10 +50,10 @@ flat orthographic UI, no perspective. Dark fantasy theme: matte obsidian-black p
 thin dark blood-red borders (#990000), vibrant crimson (#FF0000) glow accents. Jagged one-pixel
 electric-red lightning arcs with pale pink-white cores crackle along the outer edges of every panel
 and link the nine hotbar slots, with a faint red aura around the arcs. Shown: player inventory with
-crafting grid, six-row chest, hotbar with the selected slot glowing crimson, "Resume Game" and
-"Options" buttons with crimson text, item icons of an obsidian-black sword, pickaxe and axe with
-glowing crimson edges, a glowing crimson blood apple, a potion and an eye of ender crackling with
-red sparks. Clean, high contrast, readable, minimal.
+crafting grid and the recipe book open beside it, six-row chest, hotbar with the selected slot
+glowing crimson, "Resume Game" and "Options" buttons with crimson text, a glowing crimson blood
+apple, a potion and an eye of ender crackling with red sparks. Clean, high contrast, readable,
+minimal.
 ```
 
 **Negative prompt**

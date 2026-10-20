@@ -2,6 +2,6 @@
   "animation": {
     "height": 22,
     "frametime": 2,
-    "frames": [ { "index": 0, "time": 60 }, 1, 2, 3, { "index": 0, "time": 40 }, 4, 5 ]
+    "frames": [ { "index": 0, "time": 30 }, 1, 2, 3, { "index": 0, "time": 20 }, 4, 5 ]
   }
 }

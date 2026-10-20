@@ -38,6 +38,10 @@ void main() {
     if (all(lessThan(abs(Color.rgb - vec3(64.0 / 255.0)), vec3(0.5 / 255.0)))) {
         vertexColor = vec4(1.0, 0.0, 0.0, Color.a);
     }
+    // HotbarX: the XP level and affordable anvil/enchanting costs are exactly #80FF20; draw them pale crimson (#FFE5E5).
+    if (all(lessThan(abs(Color.rgb - vec3(128.0, 255.0, 32.0) / 255.0), vec3(0.5 / 255.0)))) {
+        vertexColor = vec4(1.0, 229.0 / 255.0, 229.0 / 255.0, Color.a);
+    }
 #endif
 #endif
     texCoord0 = UV0;
