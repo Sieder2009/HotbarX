@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": { "text": "HotbarX - Crimson Obsidian UI", "color": "#FF0000" },
+    "description": { "text": "HotbarX - Crimson Obsidian UI\n", "color": "#FF0000", "extra": [ { "text": "Heavy Knight Edition", "color": "#8C8C8C" } ] },
     "min_format": 88,
     "max_format": 97
   },

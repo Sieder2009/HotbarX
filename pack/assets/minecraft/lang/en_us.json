@@ -10,5 +10,8 @@
   "gui.advancements": "§cAdvancements",
   "gui.stats": "§cStatistics",
   "item.minecraft.golden_apple": "§cBlood Apple",
-  "item.minecraft.enchanted_golden_apple": "Enchanted Blood Apple"
+  "item.minecraft.enchanted_golden_apple": "Enchanted Blood Apple",
+  "advancements.toast.task": "§cTitle Acquired!",
+  "advancements.toast.goal": "§cGoal Reached!",
+  "advancements.toast.challenge": "§cChallenge Cleared!"
 }

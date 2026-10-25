@@ -43,8 +43,10 @@ public class BuildTextures {
             SLATE = 0x2A2A2A, BLOOD_950 = 0x1A0000, BLOOD_900 = 0x330000, BLOOD_700 = 0x660000,
             BLOOD = 0x990000, CRIMSON_600 = 0xCC0000, CRIMSON = 0xFF0000, CRIMSON_HOT = 0xFF6666,
             CORE = 0xFFE5E5;
+    /** Heavy-knight steel (SPEC §4): plate armour on corners, rivets, buttons and the slider handle. */
+    static final int STEEL_800 = 0x383838, STEEL_600 = 0x5A5A5A, STEEL_400 = 0x8C8C8C, STEEL_200 = 0xC8C8C8;
     static final Set<Integer> TOKENS = Set.of(VOID, OBSIDIAN, OBSIDIAN_2, CHARCOAL, SLATE, BLOOD_950,
-            BLOOD_900, BLOOD_700, BLOOD, CRIMSON_600, CRIMSON, CRIMSON_HOT, CORE);
+            BLOOD_900, BLOOD_700, BLOOD, CRIMSON_600, CRIMSON, CRIMSON_HOT, CORE, STEEL_800, STEEL_600, STEEL_400, STEEL_200);
     /** Colours that count as a lit lightning pixel. */
     static final Set<Integer> LIT = Set.of(CRIMSON_600, CRIMSON, CRIMSON_HOT, CORE);
     static final int CELL = withAlpha(OBSIDIAN, 0xE6);
@@ -82,6 +84,8 @@ public class BuildTextures {
             b.experienceBar();
             b.slotSprites();
             b.buttons();
+            b.tooltip();
+            b.toasts();
             b.items();
             b.packIcon();
             System.out.println("Wrote " + b.written + " files from " + jarPath);
@@ -119,17 +123,18 @@ public class BuildTextures {
 
     record Arc(int x, int y, int half) {}
 
-    /** Four long corner arcs plus two arcs on every side: about half of the perimeter crackles. */
+    /**
+     * Two arcs on every side, plus one arc that bursts out of each corner guard, turning clockwise
+     * (down, left, up, right) like a pinwheel: about half of the free perimeter crackles.
+     */
     static List<Arc> standardArcs(int w, int h) {
-        List<Arc> arcs = new ArrayList<>(List.of(new Arc(2, 2, 16), new Arc(w - 3, 2, 16), new Arc(2, h - 3, 16), new Arc(w - 3, h - 3, 16)));
-        for (int x : new int[] {w * 3 / 10, w * 7 / 10}) {
-            arcs.add(new Arc(x, 2, 10));
-            arcs.add(new Arc(x + 8, h - 3, 11));
-        }
-        for (int y : new int[] {h * 3 / 10, h * 7 / 10}) {
-            arcs.add(new Arc(2, y, 10));
-            arcs.add(new Arc(w - 3, y + 6, 10));
-        }
+        int outH = GUARD_H + 11, outV = GUARD_V + 11;
+        List<Arc> arcs = new ArrayList<>(List.of(new Arc(2, outV, 10), new Arc(w - 3 - outH, 2, 10),
+                new Arc(w - 3, h - 3 - outV, 10), new Arc(outH, h - 3, 10)));
+        for (int x : new int[] {w * 3 / 10, w * 6 / 10}) arcs.add(new Arc(x, 2, 10));
+        for (int x : new int[] {w * 4 / 10, w * 7 / 10}) arcs.add(new Arc(x + 8, h - 3, 11));
+        for (int y : new int[] {h * 4 / 10, h * 7 / 10}) arcs.add(new Arc(2, y, 10));
+        for (int y : new int[] {h * 3 / 10, h * 6 / 10}) arcs.add(new Arc(w - 3, y + 6, 10));
         return arcs;
     }
 
@@ -138,22 +143,23 @@ public class BuildTextures {
     static final int[] LABEL_GAP = {94, 72, 171, 81};
 
     void containers() throws IOException {
+        // The free areas hold a tower-shield crest; lightning strikes it from the recipe button or from the title row.
         container("inventory", new int[][] {{95, 4, 166, 15}}, new int[0][], standardArcs(176, 166),
-                new int[][] {{4, 80, 171, 81}, HOTBAR_GAP, {126, 55, 171, 78}}, false);
+                new int[][] {{4, 80, 171, 81}, HOTBAR_GAP, {126, 55, 151, 78}}, new int[][] {{154, 58}}, false);
         container("shulker_box", new int[][] {{6, 4, 166, 15}, {6, 71, 90, 82}}, new int[0][], standardArcs(176, 166),
-                new int[][] {LABEL_GAP, HOTBAR_GAP}, false);
+                new int[][] {LABEL_GAP, HOTBAR_GAP}, new int[0][], false);
         container("crafting_table", new int[][] {{27, 4, 166, 15}, {6, 71, 90, 82}}, new int[0][], standardArcs(176, 166),
-                new int[][] {LABEL_GAP, HOTBAR_GAP, {146, 16, 171, 70}}, false);
+                new int[][] {LABEL_GAP, HOTBAR_GAP, {151, 16, 165, 33}, {151, 53, 165, 70}}, new int[][] {{152, 35}}, false);
         // generic_54: no long arcs on the side bands over rows 14-127; those get the repeated 18-row tile instead.
         container("generic_54", new int[][] {{6, 4, 166, 15}, {6, 127, 90, 138}},
                 new int[][] {{0, 14, 7, 127}, {168, 14, 175, 127}},
-                List.of(new Arc(2, 2, 14), new Arc(173, 2, 14), new Arc(53, 2, 10), new Arc(123, 2, 10),
-                        new Arc(2, 219, 16), new Arc(173, 219, 16), new Arc(60, 219, 11), new Arc(120, 219, 11),
-                        new Arc(2, 160, 9), new Arc(2, 200, 8), new Arc(173, 150, 9), new Arc(173, 195, 8)),
-                new int[][] {{94, 128, 171, 137}, {4, 194, 171, 195}}, true);
+                List.of(new Arc(GUARD_H + 11, 2, 10), new Arc(60, 2, 10), new Arc(110, 2, 10), new Arc(173 - GUARD_H - 11, 2, 10),
+                        new Arc(GUARD_H + 11, 219, 10), new Arc(78, 219, 11), new Arc(131, 219, 11),
+                        new Arc(2, 150, 9), new Arc(2, 188, 9), new Arc(173, 145, 9), new Arc(173, 219 - GUARD_V - 11, 10)),
+                new int[][] {{94, 128, 171, 137}, {4, 194, 171, 195}}, new int[0][], true);
     }
 
-    void container(String name, int[][] textZones, int[][] noArcRects, List<Arc> arcs, int[][] channels, boolean seamTile) throws IOException {
+    void container(String name, int[][] textZones, int[][] noArcRects, List<Arc> arcs, int[][] channels, int[][] crests, boolean seamTile) throws IOException {
         String path = "gui/container/" + name + ".png";
         Img v = read(path);
         int[][] d = distance(v);
@@ -161,11 +167,11 @@ public class BuildTextures {
             for (int x = 0; x < v.w; x++)
                 if (v.alpha(x, y) != 0 && d[x][y] > 4 && v.rgb(x, y) == 0x555555)
                     throw new IllegalStateException(name + ": bevel colour inside the panel at " + x + "," + y);
-        framedPanel(path, v, mapContainerColors(v, name), textZones, noArcRects, arcs, channels, seamTile);
+        framedPanel(path, v, mapContainerColors(v, name), textZones, noArcRects, arcs, channels, crests, seamTile);
     }
 
-    /** Frame rings, perimeter arcs, channel bolts and halo on an already recoloured panel (SPEC §5.2). */
-    void framedPanel(String path, Img v, Img img, int[][] textZones, int[][] noArcRects, List<Arc> arcs, int[][] channels, boolean seamTile) throws IOException {
+    /** Frame rings, corner guards, crests, perimeter arcs, channel bolts and halo on an already recoloured panel (SPEC §5.2). */
+    void framedPanel(String path, Img v, Img img, int[][] textZones, int[][] noArcRects, List<Arc> arcs, int[][] channels, int[][] crests, boolean seamTile) throws IOException {
         String name = path.substring(path.lastIndexOf('/') + 1, path.length() - 4);
         int[][] d = distance(img);
         int[] ring = {0, VOID, BLOOD, BLOOD_900, BLOOD_950};
@@ -173,9 +179,11 @@ public class BuildTextures {
             for (int x = 0; x < img.w; x++) {
                 if (img.alpha(x, y) != 0 && d[x][y] <= 4) img.set(x, y, opaque(ring[d[x][y]]));
             }
+        boolean[][] guard = cornerGuards(img, d);
+        for (int[] c : crests) crest(img, c[0], c[1], name);
         Img plain = img.copy();
 
-        boolean[][] allowed = arcMask(img, d, textZones, noArcRects, null);
+        boolean[][] allowed = arcMask(img, d, textZones, noArcRects, (x, y) -> !guard[x][y]);
         List<int[]> loop = ringLoop(d, img.w, img.h, 3);
         int[][] inward = inwardDirs(loop, d);
         Random rnd = rng(name);
@@ -223,7 +231,7 @@ public class BuildTextures {
         Map<Integer, Integer> panel = Map.of(0xC6C6C6, OBSIDIAN, 0x373737, OBSIDIAN_2, 0xFFFFFF, BLOOD_700,
                 0x000000, BLOOD_900, 0x555555, BLOOD_900, 0x8B8B8B, BLOOD_700);
         Img img = recolor(v, (x, y) -> x >= 10 && x <= 23 && y >= 14 && y <= 27 ? lens : panel, "recipe_book");
-        framedPanel(path, v, img, new int[0][], new int[0][], standardArcs(149, 168), new int[0][], false);
+        framedPanel(path, v, img, new int[0][], new int[0][], standardArcs(149, 168), new int[0][], new int[0][], false);
 
         Map<Integer, Integer> book = Map.of(0x56AD56, CRIMSON, 0x478E47, CRIMSON_600, 0x3D7A3D, BLOOD, 0x2A592A, BLOOD_700,
                 0x1B361B, BLOOD_900, 0xD6D6D6, CORE, 0xB7B7B7, CRIMSON_HOT, 0x999999, BLOOD, 0x5B5B5B, BLOOD_700, 0x161005, VOID);
@@ -385,6 +393,103 @@ public class BuildTextures {
     }
 
     interface BiIntPredicate { boolean test(int x, int y); }
+
+    // ------------------------------------------------------------------ heavy-knight armour (SPEC §5.7)
+
+    /** Pixel-art legend: steel, blood and crimson tokens by letter; '.' leaves the pixel as it is. */
+    static final Map<Character, Integer> ART = Map.ofEntries(Map.entry('O', VOID), Map.entry('1', OBSIDIAN),
+            Map.entry('2', OBSIDIAN_2), Map.entry('k', CHARCOAL), Map.entry('s', SLATE), Map.entry('e', BLOOD_950),
+            Map.entry('n', BLOOD_900), Map.entry('b', BLOOD_700), Map.entry('B', BLOOD), Map.entry('c', CRIMSON_600),
+            Map.entry('C', CRIMSON), Map.entry('h', CRIMSON_HOT), Map.entry('H', CORE), Map.entry('D', STEEL_800),
+            Map.entry('m', STEEL_600), Map.entry('L', STEEL_400), Map.entry('W', STEEL_200));
+
+    /**
+     * Arm lengths of a corner guard, counted from the panel corner: along the top and bottom edges, and down
+     * the sides. The side arms end at row 15, so generic_54's header never reaches its seam row 16.
+     */
+    static final int GUARD_H = 20, GUARD_V = 15;
+    /** The guard's boss, 5×5 over rings 2-6 of the corner: a steel stud lit from the top left around a crimson gem. */
+    static final String[] BOSS = {".LLL.", "LmHmD", "LhCcD", "LmBmD", ".DDD."};
+    /** A tower shield bearing a crimson sword, point down: the heavy knight's crest. */
+    static final String[] CREST = {
+            ".OOOOOOOOOOO.",
+            "OLLLLLLLLLLmO",
+            "OLbbbbWnnnnDO",
+            "OLbbbbmnnnnDO",
+            "OLbWLLLLLDnDO",
+            "OLbbbhCcnnnDO",
+            "OLbbbhCcnnnDO",
+            "OLbbbhCcnnnDO",
+            "OLbbbhCcnnnDO",
+            "OLbbbhCcnnnDO",
+            ".OLbbhCcnnDO.",
+            ".OLbbbCnnnDO.",
+            "..OLbbCnnDO..",
+            "...OLbnnDO...",
+            "....OLnDO....",
+            ".....OOO....."};
+
+    /**
+     * Riveted steel guards on the four corners of the panel's bounding box: the boss on the corner and a 3-px
+     * plate arm along each edge over rings 2-4, lit from the top left, with a rivet, a crimson inlay down its
+     * middle and a bevelled tip. Panels under 64 px tall (toasts, the banner) get no side arms. Ring 1 (the
+     * outline) stays. Returns the guard pixels; arcs stop where they meet them.
+     */
+    static boolean[][] cornerGuards(Img img, int[][] d) {
+        int x0 = img.w, y0 = img.h, x1 = -1, y1 = -1;
+        for (int y = 0; y < img.h; y++)
+            for (int x = 0; x < img.w; x++)
+                if (img.alpha(x, y) != 0) {
+                    x0 = Math.min(x0, x);
+                    y0 = Math.min(y0, y);
+                    x1 = Math.max(x1, x);
+                    y1 = Math.max(y1, y);
+                }
+        int armV = y1 - y0 + 1 < 64 ? 5 : GUARD_V;
+        boolean[][] g = new boolean[img.w][img.h];
+        List<int[]> rivets = new ArrayList<>();
+        for (int[] c : new int[][] {{x0, y0, 1, 1}, {x1, y0, -1, 1}, {x0, y1, 1, -1}, {x1, y1, -1, -1}}) {
+            int bx = Math.min(c[0] + c[2], c[0] + 5 * c[2]), by = Math.min(c[1] + c[3], c[1] + 5 * c[3]);
+            for (int ly = 1; ly <= armV; ly++)
+                for (int lx = 1; lx <= GUARD_H; lx++) {
+                    int x = c[0] + c[2] * lx, y = c[1] + c[3] * ly, r = d[x][y], col;
+                    if (img.alpha(x, y) == 0 || r < 2) continue;
+                    if (lx <= 5 && ly <= 5) {
+                        char ch = BOSS[y - by].charAt(x - bx);
+                        if (ch == '.') continue;
+                        col = ART.get(ch);
+                    } else if (r <= 4 && (lx <= 5 || ly <= 5)) {
+                        boolean horizontal = ly <= 5;
+                        int along = horizontal ? lx : ly, end = (horizontal ? GUARD_H : armV) - (r - 2);
+                        if (along > end) continue;
+                        // The outer ring faces up or left on the top and left edges, so it catches the light there.
+                        boolean lit = horizontal ? c[3] > 0 : c[2] > 0;
+                        col = along == end ? STEEL_800 : (lit ? new int[] {STEEL_400, STEEL_600, STEEL_800} : new int[] {STEEL_800, STEEL_600, STEEL_400})[r - 2];
+                        if (r == 3 && along == 7) rivets.add(new int[] {x, y, horizontal ? 1 : 0, horizontal ? 0 : 1});
+                        else if (r == 3 && along >= 9 && along < end) col = CRIMSON_600;
+                    } else continue;
+                    img.set(x, y, opaque(col));
+                    g[x][y] = true;
+                }
+        }
+        // A rivet is a glint with its shadow to the right (on top and bottom arms) or below it (on side arms).
+        for (int[] rv : rivets) {
+            img.set(rv[0], rv[1], opaque(STEEL_200));
+            img.set(rv[0] + rv[2], rv[1] + rv[3], opaque(STEEL_800));
+        }
+        return g;
+    }
+
+    /** Paints the crest with its top-left at (x, y); every pixel it covers must be plain fill. */
+    static void crest(Img img, int x, int y, String name) {
+        for (int r = 0; r < CREST.length; r++)
+            for (int c = 0; c < CREST[r].length(); c++) {
+                char ch = CREST[r].charAt(c);
+                if (ch == '.') continue;
+                if (img.get(x + c, y + r) != opaque(OBSIDIAN)) throw new IllegalStateException(name + ": crest over a non-fill pixel at " + (x + c) + "," + (y + r));
+                img.set(x + c, y + r, opaque(ART.get(ch)));
+            }
+    }
 
     // ------------------------------------------------------------------ lightning (SPEC §5.1)
 
@@ -667,6 +772,20 @@ public class BuildTextures {
                 else c = opaque(OBSIDIAN_2);
                 im.set(x, y, c);
             }
+        // Each separator carries a riveted steel strap: a 2×2 stud at either end and a dark strap between them.
+        for (int k = 0; k < 8; k++) {
+            int x = 20 + 20 * k;
+            for (int y = 6; y <= 15; y++) {
+                im.set(x, y, opaque(STEEL_800));
+                im.set(x + 1, y, opaque(CHARCOAL));
+            }
+            for (int y : new int[] {4, 16}) {
+                im.set(x, y, opaque(STEEL_200));
+                im.set(x + 1, y, opaque(STEEL_400));
+                im.set(x, y + 1, opaque(STEEL_400));
+                im.set(x + 1, y + 1, opaque(STEEL_800));
+            }
+        }
         return im;
     }
 
@@ -879,10 +998,10 @@ public class BuildTextures {
             sprite("hud/food_" + fh + "_hunger", rotten);
         }
 
-        // Armor: obsidian plates with a glowing crimson rim; empty slots go dark.
+        // Armor: heavy-knight steel plates with a glowing crimson rim; empty slots go dark.
         sprite("hud/armor_empty", Map.of(0x000000, BLOOD_900, 0x868686, OBSIDIAN_2));
-        sprite("hud/armor_full", Map.of(0x000000, CRIMSON_600, 0xE6E7F2, CORE, 0xB8B9C4, SLATE, 0x696A70, CHARCOAL));
-        sprite("hud/armor_half", Map.of(0x000000, CRIMSON_600, 0xE6E7F2, CORE, 0xB8B9C4, SLATE, 0x696A70, CHARCOAL, 0x3D3D3D, OBSIDIAN_2));
+        sprite("hud/armor_full", Map.of(0x000000, CRIMSON_600, 0xE6E7F2, STEEL_200, 0xB8B9C4, STEEL_400, 0x696A70, STEEL_800));
+        sprite("hud/armor_half", Map.of(0x000000, CRIMSON_600, 0xE6E7F2, STEEL_200, 0xB8B9C4, STEEL_400, 0x696A70, STEEL_800, 0x3D3D3D, OBSIDIAN_2));
     }
 
     /** A heart recoloured through the map, with the top lobes lifted to crimson-hot for a glossy, charged look. */
@@ -1033,7 +1152,7 @@ public class BuildTextures {
             for (int y = 0; y < v.h; y++)
                 for (int x = 0; x < v.w; x++) {
                     if (outside[x][y]) continue;
-                    if (v.alpha(x, y) == 0) { out.set(x, y, opaque(OBSIDIAN)); continue; }
+                    if (v.alpha(x, y) == 0) { out.set(x, y, opaque(STEEL_800)); continue; }
                     boolean rim = false;
                     for (int[] o : FOUR) {
                         int nx = x + o[0], ny = y + o[1];
@@ -1058,28 +1177,126 @@ public class BuildTextures {
     }
 
     void buttons() throws IOException {
-        button("button", BLOOD, SLATE, OBSIDIAN, CHARCOAL, false);
-        button("button_highlighted", CRIMSON, CRIMSON_HOT, BLOOD, CHARCOAL, true);
-        button("button_disabled", BLOOD_900, OBSIDIAN, OBSIDIAN, OBSIDIAN, false);
+        button("button", STEEL_400, STEEL_800, BLOOD, CHARCOAL, STEEL_400);
+        button("button_highlighted", STEEL_200, STEEL_600, CRIMSON, SLATE, CORE);
+        button("button_disabled", STEEL_800, STEEL_800, BLOOD_900, OBSIDIAN, -1);
+        sliders();
     }
 
-    void button(String name, int ring, int bevelTopLeft, int bevelBottomRight, int face, boolean sparks) throws IOException {
+    /**
+     * A heavy plate (SPEC §8): chamfered corners, a steel rim lit from the top left, a crimson inlay and a flat
+     * face, with a rivet (or, on hover, a spark) where the inlay turns each corner. Only the 3×3 corners hold
+     * detail; the edges and the face are cut and repeated to the button's width.
+     */
+    void button(String name, int rimLit, int rimShade, int inlay, int face, int rivet) throws IOException {
         Img im = new Img(200, 20);
         for (int y = 0; y < 20; y++)
             for (int x = 0; x < 200; x++) {
-                int r = Math.min(Math.min(x, 199 - x), Math.min(y, 19 - y));
-                int c = switch (r) {
+                int cx = Math.min(x, 199 - x), cy = Math.min(y, 19 - y), r = Math.min(cx, cy);
+                if (cx + cy < 2) continue;
+                int c = cx + cy == 2 ? VOID : switch (r) {
                     case 0 -> VOID;
-                    case 1 -> ring;
-                    case 2 -> (y == 2 && x < 197) || (x == 2 && y < 17) ? bevelTopLeft : bevelBottomRight;
+                    case 1 -> y == 1 || x == 1 ? rimLit : rimShade;
+                    case 2 -> inlay;
                     default -> face;
                 };
                 im.set(x, y, opaque(c));
             }
-        if (sparks) for (int[] p : new int[][] {{1, 1}, {198, 1}, {1, 18}, {198, 18}}) im.set(p[0], p[1], opaque(CORE));
+        if (rivet >= 0) for (int[] p : new int[][] {{2, 2}, {197, 2}, {2, 17}, {197, 17}}) im.set(p[0], p[1], opaque(rivet));
         String path = "gui/sprites/widget/" + name + ".png";
         write(path, im, false);
         copyMeta(path);
+    }
+
+    /** Sliders: a track edged like the text fields, and a steel handle with a crimson grip; hover lights both up. */
+    void sliders() throws IOException {
+        for (boolean hot : new boolean[] {false, true}) {
+            String suffix = hot ? "_highlighted" : "";
+            Img track = new Img(200, 20);
+            for (int y = 0; y < 20; y++)
+                for (int x = 0; x < 200; x++)
+                    track.set(x, y, opaque(x == 0 || y == 0 || x == 199 || y == 19 ? (hot ? CRIMSON : BLOOD) : OBSIDIAN));
+            write("gui/sprites/widget/slider" + suffix + ".png", track, false);
+            copyMeta("gui/sprites/widget/slider" + suffix + ".png");
+
+            // 8×20, nine-slice borders L2 T2 R2 B3: the grip runs down the stretchable middle.
+            String[] rows = hot ? new String[] {"CCCCCCCC", "CWWWWWLC", "CWLLLLmC", "CWLChLmC", "CmmmmmmC"}
+                    : new String[] {"OOOOOOOO", "OWLLLLmO", "OLmmmmDO", "OLmBcmDO", "ODDDDDDO"};
+            Img handle = new Img(8, 20);
+            for (int y = 0; y < 20; y++) {
+                String row = rows[y == 0 || y == 19 ? 0 : y == 1 ? 1 : y == 18 ? 4 : y >= 3 && y <= 16 ? 3 : 2];
+                for (int x = 0; x < 8; x++) handle.set(x, y, opaque(ART.get(row.charAt(x))));
+            }
+            write("gui/sprites/widget/slider_handle" + suffix + ".png", handle, false);
+            copyMeta("gui/sprites/widget/slider_handle" + suffix + ".png");
+        }
+    }
+
+    /**
+     * Tooltips as a "system window" (SPEC §8.2). Both sprites are 100×100 nine-slices drawn 12 px out from the
+     * text; vanilla's box spans 8-91. The background is obsidian at α 0xF0 with chamfered corners. The frame is a
+     * crimson line on the box edge (brighter along the top) over an inner blood glow, plus a lock-on bracket 2 px
+     * outside each corner, small enough to stay inside the 10 px corner of the frame's nine-slice.
+     */
+    void tooltip() throws IOException {
+        Img bg = new Img(100, 100), frame = new Img(100, 100);
+        for (int y = 8; y <= 91; y++)
+            for (int x = 8; x <= 91; x++) {
+                int cx = Math.min(x - 8, 91 - x), cy = Math.min(y - 8, 91 - y), r = Math.min(cx, cy);
+                if (cx + cy < 2) continue;
+                bg.set(x, y, withAlpha(OBSIDIAN, 0xF0));
+                if (r == 0 || cx + cy == 2) frame.set(x, y, opaque(y == 8 ? CRIMSON_600 : BLOOD));
+                else if (r == 1) frame.set(x, y, opaque(BLOOD_900));
+            }
+        for (int[] m : new int[][] {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}}) {
+            int ox = m[0] > 0 ? 6 : 93, oy = m[1] > 0 ? 6 : 93;
+            for (int k = 0; k < 4; k++) {
+                int c = k == 0 ? CORE : k == 3 ? CRIMSON_600 : CRIMSON_HOT;
+                frame.set(ox + m[0] * k, oy, opaque(c));
+                frame.set(ox, oy + m[1] * k, opaque(c));
+            }
+        }
+        write("gui/sprites/tooltip/background.png", bg, false);
+        write("gui/sprites/tooltip/frame.png", frame, false);
+        copyMeta("gui/sprites/tooltip/background.png");
+        copyMeta("gui/sprites/tooltip/frame.png");
+    }
+
+    /**
+     * Toasts (SPEC §8.3). The advancement toast (160×32, drawn 1:1) becomes a small framed panel with corner
+     * guards and arcs along its long sides. The recipe and tutorial toasts keep their dark text, set in code, so
+     * they become light steel plates with a crimson line. The music and system toasts are recoloured.
+     */
+    void toasts() throws IOException {
+        String path = "gui/sprites/toast/advancement.png";
+        Img v = read(path), img = new Img(v.w, v.h);
+        for (int y = 0; y < v.h; y++) for (int x = 0; x < v.w; x++) if (v.alpha(x, y) != 0) img.set(x, y, opaque(OBSIDIAN));
+        framedPanel(path, v, img, new int[][] {{6, 6, 153, 25}}, new int[0][],
+                List.of(new Arc(50, 2, 12), new Arc(108, 2, 9), new Arc(74, 29, 12), new Arc(126, 29, 8)), new int[0][], new int[0][], false);
+
+        // Light steel: rings by distance (outline, crimson line, steel rim) around a pale face, rivets in the corners.
+        for (String name : new String[] {"recipe", "tutorial"}) {
+            String p = "gui/sprites/toast/" + name + ".png";
+            Img t = read(p), out = new Img(t.w, t.h);
+            int[][] d = distance(t);
+            int[] ring = {0, VOID, BLOOD, STEEL_400};
+            for (int y = 0; y < t.h; y++)
+                for (int x = 0; x < t.w; x++)
+                    if (t.alpha(x, y) != 0) out.set(x, y, opaque(d[x][y] < ring.length ? ring[d[x][y]] : STEEL_200));
+            if (name.equals("recipe"))
+                for (int[] c : new int[][] {{4, 4}, {t.w - 6, 4}, {4, t.h - 6}, {t.w - 6, t.h - 6}}) {
+                    out.set(c[0], c[1], opaque(STEEL_600));
+                    out.set(c[0] + 1, c[1], opaque(STEEL_400));
+                    out.set(c[0], c[1] + 1, opaque(STEEL_400));
+                    out.set(c[0] + 1, c[1] + 1, opaque(STEEL_800));
+                }
+            write(p, out, false);
+            if (jar.getEntry("assets/minecraft/textures/" + p + ".mcmeta") != null) copyMeta(p);
+        }
+        sprite("toast/now_playing", Map.of(0x000000, VOID, 0x555555, BLOOD, 0x212121, OBSIDIAN));
+        // The system toast's yellow "!" is a gold leak; it becomes a crimson one with a pale glint.
+        sprite("toast/system", Map.of(0x000000, VOID, 0x082C4C, OBSIDIAN, 0x286485, BLOOD, 0x5C5C00, BLOOD_700,
+                0xCAB60D, CRIMSON, 0xFFFFFF, CORE));
     }
 
     // ------------------------------------------------------------------ items (SPEC §9)
@@ -1154,31 +1371,53 @@ public class BuildTextures {
 
     // ------------------------------------------------------------------ pack icon
 
-    /** 64×64, shipped at 2×: the panel frame with crackling arcs around a white-hot bolt with a stepped glow. */
+    /**
+     * 64×64, shipped at 2×: the guarded panel frame with crackling arcs around a heavy knight's great helm. The
+     * helm is steel lit from the left, with a centre ridge, breathing holes, a crimson plume and an eye slit that
+     * glows crimson with two pale-hot eyes; a stepped blood aura sets it off the fill.
+     */
     void packIcon() throws IOException {
         int s = 64;
         Img im = new Img(s, s).fill(opaque(OBSIDIAN));
         int[][] d = distance(im);
         int[] ring = {0, VOID, BLOOD, BLOOD_900, BLOOD_950};
         for (int y = 0; y < s; y++) for (int x = 0; x < s; x++) if (d[x][y] <= 4) im.set(x, y, opaque(ring[d[x][y]]));
-        Polygon boltShape = new Polygon(new int[] {40, 17, 30, 22, 49, 35, 47}, new int[] {7, 37, 37, 58, 25, 25, 7}, 7);
+        boolean[][] guard = cornerGuards(im, d);
+        Polygon helm = new Polygon(new int[] {22, 42, 46, 47, 43, 21, 17, 18}, new int[] {12, 12, 16, 48, 54, 54, 48, 16}, 8);
+        Polygon plume = new Polygon(new int[] {24, 27, 32, 38, 41, 40}, new int[] {13, 7, 4, 6, 11, 13}, 6);
         Img shape = new Img(s, s);
-        for (int y = 0; y < s; y++) for (int x = 0; x < s; x++) if (boltShape.contains(x + 0.5, y + 0.5)) shape.set(x, y, opaque(VOID));
-        // Inside the bolt the depth picks the colour (crimson edge, crimson-hot, a core spine); outside, glow rings.
-        int[][] depth = distance(shape), reach = near(shape, 4);
-        int[] body = {0, CRIMSON, CRIMSON, CRIMSON_HOT, CORE}, aura = {0, BLOOD_700, BLOOD_900, BLOOD_950, BLOOD_950};
+        for (int y = 0; y < s; y++)
+            for (int x = 0; x < s; x++)
+                if (helm.contains(x + 0.5, y + 0.5) || plume.contains(x + 0.5, y + 0.5)) shape.set(x, y, opaque(VOID));
+        int[][] reach = near(shape, 3);
+        int[] aura = {0, BLOOD_700, BLOOD_900, BLOOD_950};
         boolean[][] allowed = new boolean[s][s];
         for (int y = 0; y < s; y++)
             for (int x = 0; x < s; x++) {
-                if (depth[x][y] > 0) im.set(x, y, opaque(body[Math.min(4, depth[x][y])]));
-                else if (reach[x][y] <= 4 && d[x][y] > 4) im.set(x, y, opaque(aura[reach[x][y]]));
-                allowed[x][y] = d[x][y] <= 6 && reach[x][y] > 4;
+                allowed[x][y] = d[x][y] <= 6 && reach[x][y] > 3 && !guard[x][y];
+                if (shape.alpha(x, y) == 0) {
+                    if (reach[x][y] <= 3 && d[x][y] > 4) im.set(x, y, opaque(aura[reach[x][y]]));
+                    continue;
+                }
+                boolean edge = false;
+                for (int[] o : FOUR) if (shape.alpha(x + o[0], y + o[1]) == 0) edge = true;
+                boolean eye = (x >= 20 && x <= 29) || (x >= 34 && x <= 43);
+                int c;
+                if (edge) c = VOID;
+                else if (!helm.contains(x + 0.5, y + 0.5)) c = y <= 6 ? CRIMSON_HOT : x >= 37 || y >= 11 ? BLOOD : CRIMSON;
+                else if (y >= 28 && y <= 32 && x >= 19 && x <= 44 && !(x == 31 || x == 32))
+                    c = y == 28 || y == 32 || !eye ? VOID : y != 30 ? CRIMSON : x == 24 || x == 25 || x == 38 || x == 39 ? CORE : CRIMSON_HOT;
+                else if (x == 31) c = STEEL_200;
+                else if (x == 32) c = STEEL_400;
+                else if (x >= 35 && x <= 44 && y >= 37 && y <= 49 && (x - 35) % 3 == 0 && (y - 37) % 3 == 0) c = VOID;
+                else c = x <= 21 ? STEEL_400 : x <= 36 ? STEEL_600 : STEEL_800;
+                im.set(x, y, opaque(c));
             }
         List<int[]> loop = ringLoop(d, s, s, 3);
         int[][] inward = inwardDirs(loop, d);
         Random rnd = rng("pack");
         Glow glow = new Glow();
-        for (Arc a : List.of(new Arc(2, 2, 13), new Arc(61, 61, 13), new Arc(61, 20, 6), new Arc(2, 44, 6))) edgeBolt(im, loop, inward, a, allowed, rnd, glow);
+        for (Arc a : List.of(new Arc(2, 32, 12), new Arc(61, 30, 12), new Arc(32, 61, 9))) edgeBolt(im, loop, inward, a, allowed, rnd, glow);
         glow(im, glow, allowed);
         Img big = im.scaled(2);
         checkTokens("pack.png", big, false);
@@ -1382,6 +1621,7 @@ public class BuildTextures {
         writePng(dir.resolve("inventory.png"), inventoryScene(font).scaled(2));
         writePng(dir.resolve("containers.png"), containerScene(font).scaled(2));
         writePng(dir.resolve("pause_menu.png"), pauseScene(font).scaled(2));
+        writePng(dir.resolve("system.png"), systemScene(font).scaled(2));
         writePng(dir.resolve("palette.png"), paletteScene(font).scaled(2));
         hudGif(font, dir.resolve("hud.gif"));
     }
@@ -1412,15 +1652,17 @@ public class BuildTextures {
             }
         font.draw(im, subtitle, sx, sy, CRIMSON_600, false);
 
-        boolean[][] allowed = new boolean[w][h];
+        boolean[][] guard = cornerGuards(im, d), allowed = new boolean[w][h];
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
-                allowed[x][y] = im.alpha(x, y) != 0 && d[x][y] <= 6 && reach[x][y] > 3 && !(y >= sy - 2 && y <= sy + 9);
+                allowed[x][y] = im.alpha(x, y) != 0 && d[x][y] <= 6 && reach[x][y] > 3 && !(y >= sy - 2 && y <= sy + 9) && !guard[x][y];
         List<int[]> loop = ringLoop(d, w, h, 3);
         int[][] inward = inwardDirs(loop, d);
         Random rnd = rng("banner");
         Glow glow = new Glow();
-        for (Arc a : standardArcs(w, h)) edgeBolt(im, loop, inward, a, allowed, rnd, glow);
+        for (Arc a : List.of(new Arc(45, 2, 12), new Arc(100, 2, 12), new Arc(155, 2, 12), new Arc(50, 49, 12),
+                new Arc(110, 49, 10), new Arc(160, 49, 12), new Arc(2, 26, 10), new Arc(197, 26, 10)))
+            edgeBolt(im, loop, inward, a, allowed, rnd, glow);
         glow(im, glow, allowed);
         return im;
     }
@@ -1502,6 +1744,49 @@ public class BuildTextures {
             if (i == 3) im.over(built.get("gui/sprites/container/slot_highlight_front.png"), x - 4, y - 4);
         }
         scatter(im, font, grid(8, 84, 9, 3), ix, by, rng("inventory"), 9);
+        drawTooltip(im, font, ix + 8 + 18 * 3 + 12, by + 142 - 12, new String[] {"Blood Apple"}, new int[] {MENU_TEXT});
+        return im;
+    }
+
+    /**
+     * A tooltip as the game draws it: both nine-slices 12 px out from the text block, then the lines, 10 px apart
+     * with 2 px more after the first, shadowed. A one-line tooltip is 8 px tall.
+     */
+    void drawTooltip(Img im, Font font, int x, int y, String[] lines, int[] colours) {
+        int w = 0;
+        for (String l : lines) w = Math.max(w, font.width(l) - 1);
+        int h = lines.length == 1 ? 8 : 10 * lines.length;
+        im.over(nineSlice(built.get("gui/sprites/tooltip/background.png"), w + 24, h + 24, 9), x - 12, y - 12);
+        im.over(nineSlice(built.get("gui/sprites/tooltip/frame.png"), w + 24, h + 24, 10), x - 12, y - 12);
+        for (int i = 0; i < lines.length; i++) font.draw(im, lines[i], x, y + 10 * i + (i > 0 ? 2 : 0), colours[i], true);
+    }
+
+    /**
+     * The "system windows": an advancement toast with the lang's crimson header, a recipe toast with its dark
+     * text from code, a weapon tooltip, and two sliders, the second hovered.
+     */
+    Img systemScene(Font font) throws IOException {
+        Img im = new Img(8 + 160 + 24 + 132 + 8, 8 + 32 + 6 + 32 + 10 + 20 + 4 + 20 + 8).fill(BACKDROP);
+        int x = 8, y = 8;
+        im.over(built.get("gui/sprites/toast/advancement.png"), x, y);
+        im.over(icon("iron_chestplate"), x + 8, y + 8);
+        font.draw(im, "Title Acquired!", x + 30, y + 7, MENU_TEXT, false);
+        font.draw(im, "Suit Up", x + 30, y + 18, WHITE, false);
+        y += 32 + 6;
+        im.over(built.get("gui/sprites/toast/recipe.png"), x, y);
+        im.over(icon("iron_sword"), x + 8, y + 8);
+        font.draw(im, "New Recipes Unlocked!", x + 30, y + 7, 0x500050, false);
+        font.draw(im, "Check your recipe book", x + 30, y + 18, VOID, false);
+        y += 32 + 10;
+        String[][] sliders = {{"FOV: 70", "slider", "slider_handle", "0.35"}, {"Music: 100%", "slider_highlighted", "slider_handle_highlighted", "1"}};
+        for (String[] s : sliders) {
+            im.over(nineSlice(built.get("gui/sprites/widget/" + s[1] + ".png"), 160, 20, 1), x, y);
+            im.over(built.get("gui/sprites/widget/" + s[2] + ".png"), x + (int) Math.round(Double.parseDouble(s[3]) * (160 - 8)), y);
+            font.draw(im, s[0], x + (160 - font.width(s[0])) / 2, y + 6, WHITE, true);
+            y += 24;
+        }
+        drawTooltip(im, font, 8 + 160 + 24 + 12, 8 + 12, new String[] {"Netherite Sword", "", "When in Main Hand:", " 8 Attack Damage", " 1.6 Attack Speed"},
+                new int[] {WHITE, WHITE, 0xAAAAAA, 0x00AA00, 0x00AA00});
         return im;
     }
 
@@ -1556,15 +1841,16 @@ public class BuildTextures {
         return im;
     }
 
-    /** The 13 palette tokens in two columns: swatch, token name, hex. */
+    /** The 17 palette tokens in two columns, grays and steel on the left, reds on the right: swatch, token name, hex. */
     Img paletteScene(Font font) {
-        String[] names = {"void", "obsidian", "obsidian-2", "charcoal", "slate", "blood-950", "blood-900",
-                "blood-700", "blood", "crimson-600", "crimson", "crimson-hot", "core"};
-        int[] colours = {VOID, OBSIDIAN, OBSIDIAN_2, CHARCOAL, SLATE, BLOOD_950, BLOOD_900, BLOOD_700, BLOOD, CRIMSON_600, CRIMSON, CRIMSON_HOT, CORE};
-        int colW = 156, rowH = 14;
-        Img im = new Img(2 * colW + 8, 8 + 7 * rowH).fill(BACKDROP);
+        String[] names = {"void", "obsidian", "obsidian-2", "charcoal", "slate", "steel-800", "steel-600", "steel-400", "steel-200",
+                "blood-950", "blood-900", "blood-700", "blood", "crimson-600", "crimson", "crimson-hot", "core"};
+        int[] colours = {VOID, OBSIDIAN, OBSIDIAN_2, CHARCOAL, SLATE, STEEL_800, STEEL_600, STEEL_400, STEEL_200,
+                BLOOD_950, BLOOD_900, BLOOD_700, BLOOD, CRIMSON_600, CRIMSON, CRIMSON_HOT, CORE};
+        int colW = 156, rowH = 14, perCol = 9;
+        Img im = new Img(2 * colW + 8, 8 + perCol * rowH).fill(BACKDROP);
         for (int i = 0; i < names.length; i++) {
-            int x = 8 + colW * (i / 7), y = 6 + rowH * (i % 7);
+            int x = 8 + colW * (i / perCol), y = 6 + rowH * (i % perCol);
             for (int sy = 0; sy < 11; sy++)
                 for (int sx = 0; sx < 30; sx++)
                     im.set(x + sx, y + sy, sx == 0 || sy == 0 || sx == 29 || sy == 10 ? 0xFF3A3A3A : opaque(colours[i]));

@@ -1,6 +1,6 @@
 # HotbarX — Crimson Obsidian UI · Design Specification
 
-**v0.6 · 2026-10-19** · Target: Minecraft Java **26.3** (resource pack format **97.1**), also loads in **26.2** (88.0) · Resolution **1×** (vanilla pixel grid)
+**v0.7 · 2026-10-23 · Heavy Knight update** · Target: Minecraft Java **26.3** (resource pack format **97.1**), also loads in **26.2** (88.0) · Resolution **1×** (vanilla pixel grid)
 
 Companions:
 - [`PROMPT.md`](PROMPT.md): production brief + concept-art prompts
@@ -9,11 +9,15 @@ Companions:
 
 Paths, sizes, slot positions, sprite metadata and the `pack.mcmeta` format below were read from the 26.2 and 26.3 client jars. Everything this pack uses is identical in both versions, except the text shader (§5.6). The label colour, title offsets and item rarities come from the (unobfuscated) classes of both versions. Anything that could not be verified that way is marked **(verify in-game)**.
 
+The v0.7 additions (sliders, tooltips and toasts: §8, §8.2, §8.3) were read from the **26.2** jar only, because no 26.3 jar was at hand. Their paths, sizes and `.mcmeta` are marked **(verify in 26.3)**.
+
 ---
 
 ## 1. The look
 
 Matte obsidian-black panels, each edged by one thin blood-red line that glows inward. Slots are dark wells with a dark crimson rim, so they stay out of the way. Bright crimson appears only where something is "alive": the selected hotbar slot, hovered buttons and slots, and the lightning. The lightning is 1 px wide and jagged, with one white-hot strike point per bolt. It crackles along the outer edges of panels, strikes through the empty areas between slot groups and links the hotbar slots, and it never crosses an item or a line of text. **No gold, yellow, orange or bronze pixel ships in this pack.**
+
+**Heavy Knight update (v0.7).** The look is inspired by the anime *The Exiled Heavy Knight Knows How to Game the System*: a heavy knight in plate armour who plays the world like a game, with levels, skills and titles. So a second material joins the crimson: cold **steel**, used only where armour would be. Riveted steel guards cover every panel corner, with a crimson inlay that the lightning bursts out of. A tower-shield crest takes the strike in the empty panel areas. Buttons become heavy plates, the hotbar separators carry riveted straps, and the armor bar turns to steel. The game-system side is a set of "system windows": tooltips with lock-on corner brackets, toasts with guarded frames, and a "Title Acquired!" header on advancements. The pack shows no names, logos or characters from the show; it borrows only these motifs.
 
 ## 2. Corrections to the original brief
 
@@ -44,6 +48,8 @@ Each row is a v1 default. Changing any of them doesn't affect the rest of the sp
 | D7 | Splash and lingering potions | Included (same bottle recipe) | Plain potion only |
 | D8 | Enchanted Golden Apple | Shares the Blood Apple texture; the glint tells them apart | Its own texture via a model override (§9.2) |
 | D9 | Repo layout | Pack lives in `pack/`; zip the folder's contents | Pack at repo root |
+| D10 | Heavy Knight update (v0.7) | Steel guards, crests, plate buttons, riveted hotbar straps, steel armor icons, system-window tooltips and toasts (§5.7, §8) | The v0.6 look: plain crimson frames, crimson-trim buttons, vanilla tooltips and toasts |
+| D11 | Advancement toast header | Lang `§c`, with the task header renamed "Title Acquired!" and the challenge header "Challenge Cleared!" (§8.1) | Keep the vanilla wording, in `§c` only |
 
 ## 4. Palette
 
@@ -55,7 +61,11 @@ Every token has **G = B**, so every pixel is either a neutral gray or a pure red
 | `obsidian` | `#0A0A0A` | **Primary**: panel fill, hotbar cells |
 | `obsidian-2` | `#141414` | Slot wells, hotbar separators |
 | `charcoal` | `#1E1E1E` | Button face, hotbar bands |
-| `slate` | `#2A2A2A` | Top-left bevel on dark surfaces |
+| `slate` | `#2A2A2A` | Hovered button face and toggles, potion glass, apple stem |
+| `steel-800` | `#383838` | Steel shadow edges, armor-slot silhouettes, hotbar strap |
+| `steel-600` | `#5A5A5A` | Steel body, unlit rivet ring |
+| `steel-400` | `#8C8C8C` | Lit steel edges, rivet bodies |
+| `steel-200` | `#C8C8C8` | Rivet glints, steel highlights, light toast face |
 | `blood-950` | `#1A0000` | Inner shadow of borders |
 | `blood-900` | `#330000` | Glow halo (outer ring), aura |
 | `blood-700` | `#660000` | Slot shadow edge, quiet trim |
@@ -66,6 +76,7 @@ Every token has **G = B**, so every pixel is either a neutral gray or a pure red
 | `core` | `#FFE5E5` | Lightning core flecks, specular glints |
 
 - **Forbidden:** any visible pixel with hue 11°–75° (saturation ≥ 20 %, value ≥ 12 %). That band covers gold, yellow, amber, orange, bronze, copper and brown. The vanilla hotbar fails this test: its cells hold dark olive pixels (`#272505`), so all of it gets repainted.
+- **Steel is for armour only:** corner guards, rivets, the crest, buttons, the slider handle, the armor icons, armor-slot placeholders and the light toasts. Panels, slots and cells stay obsidian and crimson.
 - **Text on `obsidian`:** `#FF0000` gives 4.95:1 and `§c #FF5555` gives 6.3:1. **Never** use `blood #990000` (2.2:1) or `§4 #AA0000` (2.55:1) for text.
 - **Glow is faked.** The GUI has no bloom or emissive layer. A glow is concentric 1-px rings: bright core → `crimson` → `blood` → `blood-900`.
 - **Matte** means flat fills: no noise, gradients or dithering on panel areas.
@@ -79,7 +90,7 @@ Every token has **G = B**, so every pixel is either a neutral gray or a pure red
 - **Forks:** off about half the inward tooth tips, 2–4 px long, one diagonal step and then onward. The last 2 px taper `crimson-600` → `blood`.
 - **Glow:** orthogonal neighbours of bright pixels (`crimson`, `crimson-hot`, `core`) that land on the fill or `blood-950` become `blood-900`. The 8 neighbours of a strike point that land on the fill, `blood-950` or `blood-900` become `blood-700`, a brighter flare.
 - **Conduits:** in a 2-row channel there's no room to zig-zag, so the bolt is a line that crackles between its rows, with flat runs of up to 4 px. It's `crimson-600`, with a `crimson` pulse of ±5 px around each strike point.
-- **Density:** about half of each panel's perimeter: four long corner arcs plus two arcs on every side. Leave quiet stretches between them, so strikes read as events rather than noise. Channel and free-area bolts (§5.2) add more inside the panel.
+- **Density:** about half of each panel's free perimeter, between the corner guards (§5.7): two arcs on every side, plus one arc per corner that bursts out of the tip of a guard arm. The four corner arcs turn clockwise like a pinwheel: down from the top-left guard, left from the top-right, up from the bottom-right, right from the bottom-left. Leave quiet stretches between them, so strikes read as events rather than noise. Channel and free-area bolts (§5.2) add more inside the panel.
 - **Clearance:** at least 1 px from every slot frame. Nothing inside a text-safe zone (§5.5).
 
 ### 5.2 Container frame — outer 4 px band, outside → in
@@ -88,7 +99,7 @@ Every token has **G = B**, so every pixel is either a neutral gray or a pure red
 3. `blood-900`
 4. `blood-950`, then the `obsidian` fill. Rings 3 and 4 are the border's glow, fading inward.
 
-- **Arcs:** lightning follows ring 3 and zig-zags from ring 2 (it touches the border line) up to ring 6, as far as the margin is free (ring offset −1 to +3). On the sides that's x 1–5; under a title it's rings 2–4 only. The arc spends most of its length on the dark rings and the fill, not on the red border line, so it keeps its contrast.
+- **Arcs:** lightning follows ring 3 and zig-zags from ring 2 (it touches the border line) up to ring 6, as far as the margin is free (ring offset −1 to +3). On the sides that's x 1–5; under a title it's rings 2–4 only. The arc spends most of its length on the dark rings and the fill, not on the red border line, so it keeps its contrast. An arc stops where it meets a corner guard.
 - **Forks:** may reach into the panel margin but must stay at least 1 px clear of every slot frame. With a 7 px margin, that means at most 2 px deep on the sides.
 - **Corners:** the rings are measured as distance from the panel's transparent edge, so they bend diagonally around the rounded corners. In vanilla the top-right corner cut is 3 px and the others are 2 px.
 - **Channel bolts:** a bolt also crosses each free channel between slot groups, staying 1 px clear of every slot frame and every text-safe zone. The channels are inclusive rectangles (x0, y0)–(x1, y1):
@@ -99,12 +110,12 @@ Every token has **G = B**, so every pixel is either a neutral gray or a pure red
   | `generic_54.png` | (4,194)–(171,195) | Right of the "Inventory" label, in the bottom piece: (94,128)–(171,137) |
   | `shulker_box.png`, `crafting_table.png` | (4,138)–(171,139) | Right of the "Inventory" label: (94,72)–(171,81) |
 
-- **Free-area bolts:** two screens have a large empty area, and a jagged bolt with forks strikes through it, along the area's longer side.
+- **Free-area bolts and crests:** two screens have a large empty area. A tower-shield crest (§5.7) stands in it, and jagged bolts with forks strike the shield, along the area's longer side.
 
-  | Texture | Area | Bolt |
-  |---|---|---|
-  | `inventory.png` | (126,55)–(171,78): below the crafting result, right of the recipe-book button at (104,61), 20×18 | Across, from the button to the right frame |
-  | `crafting_table.png` | (146,16)–(171,70): right of the result frame, below the title | Down, from the title row to the "Inventory" channel |
+  | Texture | Area | Crest (top-left) | Bolts |
+  |---|---|---|---|
+  | `inventory.png` | (126,55)–(171,78): below the crafting result, right of the recipe-book button at (104,61), 20×18 | (154,58) | Across (126,55)–(152,78), from the button to the shield |
+  | `crafting_table.png` | (146,16)–(171,70): right of the result frame, below the title | (152,35) | Down (151,16)–(165,33), from the title row onto the shield; and down (151,53)–(165,70), from below its point to the "Inventory" channel |
 
   The recipe-book button positions (inventory (104,61), crafting table (5,34)) come from `getRecipeBookButtonPosition()`, identical in the 26.2 and 26.3 classes.
 
@@ -162,6 +173,18 @@ In both versions, the `pipeline/gui_text` render pipeline uses `core/text` as it
 - **Test with mods:** Sodium, Iris and ImmediatelyFast are all in the profile. **(verify in-game)**
 - **Fallback:** delete the shader and use lang overrides instead: `"container.chest": "§cChest"` and the same for `container.inventory`, `.crafting`, `.chestDouble`, `.enderchest`, `.barrel`, `.shulkerBox`. Don't combine the two approaches: a `§` color wins over the shader, and you lose the exact hex.
 
+### 5.7 Heavy-knight armour (v0.7)
+Steel pieces are painted after the frame rings and before the lightning. Arcs and halos never cross them.
+
+- **Corner guards:** one on each corner of every framed panel: the containers, the recipe book, the advancement toast, the banner and the pack icon. Corners are taken from the panel's bounding box; ring 1 (the `void` outline) always stays.
+  - **Boss:** a 5×5 stud over rings 2–6 of the corner, lit from the top left on every corner: a `steel-400` top and left edge, a `steel-800` bottom and right edge, and chamfered corners. In the middle sits a crimson gem: a `crimson` centre, `crimson-hot` left, `crimson-600` right, `blood` below, and a `core` glint on top, with `steel-600` between them.
+  - **Arms:** a 3 px plate over rings 2–4, running 20 px along the top and bottom edges and 15 px down the sides. The sides end at row 15, so generic_54's header never reaches seam row 16 (§6.2). Panels under 64 px tall (toasts, the banner) get no side arms.
+  - **Shading:** the ring that faces up or left is `steel-400` and the one that faces down or right is `steel-800`, with `steel-600` in the middle.
+  - **Rivet and inlay:** 7 px from the corner, the middle ring holds a `steel-200` rivet with a `steel-800` shadow. From 9 px to the tip, the middle ring is a `crimson-600` inlay, so the corner arc seems to flow out of it.
+  - **Tip:** bevelled, one pixel shorter per ring inward, and edged in `steel-800`.
+  - **Clearance:** the boss stays inside x/y 1–5 from the corner, clear of the title zones (they start at x 6) and of the armor slot frames at (7,7).
+- **Crest:** a 13×16 tower shield bearing a crimson sword, point down. The rim is `steel-400` on the left and top and `steel-800` on the right, with a `void` outline. The field is split, `blood-700` and `blood-900`. The sword has a `steel-200` pommel, a `steel-600` grip, a steel crossguard and a three-tone blade (`crimson-hot`, `crimson`, `crimson-600`). Every pixel it covers must be plain fill, and bolts keep 1 px from it, like from a slot frame (§5.2).
+
 ## 6. Containers (static)
 
 Each texture is 256×256 with the panel at (0,0); the rest of the canvas is unused. An "item origin" is the top-left of a slot's 16×16 item area. The 18×18 slot frame starts 1 px up and left of it.
@@ -200,7 +223,7 @@ Grid at x = 30 + 18c, y = 17 + 18r. The result sits in a 26×26 frame at (119,30
 
 | File | Size | Design |
 |---|---|---|
-| `slot/helmet.png`, `chestplate`, `leggings`, `boots`, `shield` | 16×16 | Empty armor and offhand placeholders. `obsidian` silhouette, 1 px `blood` outline, one `blood-700` detail line |
+| `slot/helmet.png`, `chestplate`, `leggings`, `boots`, `shield` | 16×16 | Empty armor and offhand placeholders. `steel-800` silhouette, 1 px `blood` outline, one `blood-700` detail line |
 | `slot_highlight_back.png`, `slot_highlight_front.png` | 24×24, with `.mcmeta` (nine-slice, border 4) | Hover state. Back: `crimson` at α `0x40`, a red wash under the item. Front: 1 px `crimson` ring on the slot frame with `core` corner pixels, plus a `blood-900` ring at α `0x99` just outside it. Its 4 px overhang is the one place a glow may spill past a slot. |
 
 **Always ship the `.mcmeta` alongside any sprite that has one.** Metadata is read from the pack that supplies the PNG, so leaving it out loses the nine-slice or animation.
@@ -209,7 +232,7 @@ Grid at x = 30 + 18c, y = 17 + 18r. The result sits in a 26×26 frame at (119,30
 This is the book that opens from the inventory and the crafting table. Every asset is identical in 26.2 and 26.3, and each colour is mapped explicitly; an unknown colour fails the build.
 
 - **Panel** (`recipe_book.png`, 147×166 at (1,1)):
-  - The outer bevel becomes the frame rings with perimeter arcs (§5.2).
+  - The outer bevel becomes the frame rings with corner guards (§5.7) and perimeter arcs (§5.2).
   - The inner well is `obsidian-2` and keeps the slot bevel (`blood-900` top/left, `blood-700` bottom/right).
   - The search magnifier (x 11–22, y 15–26) has a crimson lens, a `core` glint and a dark-red handle. The vanilla handle is brown and would fail the palette check.
 - **Search box** (`widget/text_field*`, nine-slice border 1): `void` fill with a `blood` border, and a `crimson` border when focused. These sprites style every text field in the game.
@@ -234,7 +257,7 @@ This is the book that opens from the inventory and the crafting table. Every ass
 | Outline | row 0, row 21, col 0, col 181 | `void` |
 | Bands | rows 0–2 and 19–21; cols 0–2 and 179–181 | `charcoal`, with `blood-700` trim on the line next to the cells (row 2, row 19, col 2, col 179) |
 | Cells | x = 3+20i … 18+20i (i 0–8), y 3–18 | `obsidian` at α `0xE6` (D5) |
-| Separators | x = 19+20k … 22+20k (k 0–7), y 3–18 | `obsidian-2`; carries vertical bolts linking the two bands. A bolt zig-zags across the 4 columns (§5.1 shape) with one strike point; a stub tapers at its free end |
+| Separators | x = 19+20k … 22+20k (k 0–7), y 3–18 | `obsidian-2` with a riveted steel strap in the middle two columns: a 2×2 stud at rows 4–5 and 16–17 (`steel-200` glint, `steel-400`, `steel-800` shadow) and a `steel-800`/`charcoal` strap between them. It carries vertical bolts linking the two bands, painted over the strap. A bolt zig-zags across the 4 columns (§5.1 shape) with one strike point; a stub tapers at its free end |
 
 - **Items** draw at (3+20i, 3). **No arc pixel may enter a cell.**
 - **Rails:** the lightning rail sits on row 1 and row 20 (and on cols 1 and 180) and kinks into the outline or trim rows. Straight runs can be up to 7 px, because on a 3 px band frequent kinks read as a dashed line.
@@ -283,7 +306,7 @@ Each colour is mapped explicitly; an unknown colour fails the build.
 | `heart/poisoned_*`, `withered_*`, `frozen_*` | **Stay vanilla:** their colour is gameplay information |
 | `food_empty`, `food_full`, `food_half` | Blood-red drumsticks (`crimson-hot` → `blood-900`) with `core` bones. Empty: `blood-900` outline, `charcoal` inside |
 | `food_*_hunger` (Hunger effect) | Dull and "rotten": `charcoal`/`slate` with dim blood, `slate` bone |
-| `armor_full`, `armor_half`, `armor_empty` | Obsidian plates: `slate` body, `charcoal` shade, `core` glint and a glowing `crimson-600` rim. Empty: `blood-900` outline, `obsidian-2` inside |
+| `armor_full`, `armor_half`, `armor_empty` | Heavy-knight steel plates: `steel-400` body, `steel-800` shade, `steel-200` glint and a glowing `crimson-600` rim. Empty: `blood-900` outline, `obsidian-2` inside |
 | `experience_bar_background` (+ `.mcmeta`) | Vanilla segments recoloured to `obsidian`/`obsidian-2` with `blood-900`/`void` notches. Dim bolts crackle in the empty part. A 3-frame animation holds frame 0 for 40 ticks, then flickers brighter for 3 + 3 ticks |
 | `experience_bar_progress` (+ `.mcmeta`) | Vanilla's noisy fill mapped by brightness onto `blood-700` → `crimson-hot`, with a `blood-900` rim. Five `crimson-hot` streaks with `core` bends crackle through it; 6 frames, `frametime` 2 |
 
@@ -293,14 +316,22 @@ The XP bar sits 2 px above the hotbar, so its bolts are the lightning outside th
 
 `button.png`, `button_highlighted.png` and `button_disabled.png` are 200×20, each with a `.mcmeta` (nine-slice, border 3). The 3×3 corners are always drawn whole. The edges and centre are cut and repeated to whatever width the button has, from about 20 to 310 px.
 
-| State | Ring 1 (outer) | Ring 2 | Ring 3 (bevel) | Face | Sparks |
-|---|---|---|---|---|---|
-| Normal | `void` | `blood` | top/left `slate`, bottom/right `obsidian` | `charcoal` | — |
-| Highlighted (hover/focus) | `void` | `crimson` | top/left `crimson-hot`, bottom/right `blood` | `charcoal` | 1 `core` px in each corner |
-| Disabled | `void` | `blood-900` | `obsidian` | `obsidian` | — |
+Each button is a heavy plate (v0.7):
 
-- The face is flat: no centred motif, nothing that breaks when cut. On buttons, lightning lives **only in the 3×3 corners**.
-- These sprites restyle every vanilla button. Restyling the text-field and slider sprites (`widget/text_field*`, `widget/slider*`) to match is optional.
+| State | Ring 1 (outline) | Ring 2 (steel rim) | Ring 3 (inlay) | Face | Corner pixel of the inlay |
+|---|---|---|---|---|---|
+| Normal | `void` | top/left `steel-400`, bottom/right `steel-800` | `blood` | `charcoal` | `steel-400` rivet |
+| Highlighted (hover/focus) | `void` | top/left `steel-200`, bottom/right `steel-600` | `crimson` | `slate` | `core` spark |
+| Disabled | `void` | `steel-800` | `blood-900` | `obsidian` | — |
+
+- **Chamfer:** the three pixels at each outer corner are transparent, and the diagonal next to them is `void`, so the plate has cut corners like a game window.
+- **Flat face:** no centred motif, nothing that breaks when cut. Rivets and sparks live **only in the 3×3 corners**.
+- **Text contrast:** `§c` text on the hovered `slate` face is 4.6:1, and on `charcoal` 5.4:1.
+- These sprites restyle every vanilla button. The text fields are restyled in §6.6.
+- **Sliders** (`widget/slider`, `slider_highlighted`: 200×20, nine-slice border 1; `slider_handle`, `slider_handle_highlighted`: 8×20, borders L2 T2 R2 B3; vanilla `.mcmeta` shipped) **(verify in 26.3)**:
+  - **Track:** `obsidian` with a 1 px `blood` edge, like a text field; `crimson` when hovered or focused.
+  - **Handle:** a steel plate with a `void` outline, a `steel-200`/`steel-400` lit top and left, a `steel-800` bottom and right, and a crimson grip (`blood` + `crimson-600`) down the stretchable middle, rows 3–16.
+  - **Hovered handle:** a `crimson` outline, brighter steel and a `crimson` + `crimson-hot` grip.
 
 ### 8.1 Button text (D4) — `assets/minecraft/lang/en_us.json`
 The game language is `en_us`; add another language's file if you switch. Write `§` as `§` so the file's encoding can't break it.
@@ -313,7 +344,36 @@ The game language is `en_us`; add another language's file if you switch. Write `
 ```
 
 - **Rest of the pause menu:** the shipped `en_us.json` also colours the other pause-menu keys (identical in 26.2 and 26.3), so the menu reads as one set: `menu.shareToLan`, `gui.advancements`, `gui.stats`, `menu.feedback`, `menu.server_links`, `menu.playerReporting`, `menu.returnToMenu`, `menu.disconnect`.
+- **Advancement toast headers (D11):** `AdvancementToast` draws the header in `#FFFF00` (yellow, a gold leak in text) and a challenge's in `#FF88FF`. A `§c` in the lang string overrides both. The headers also take the game-system wording:
+
+  | Key | Vanilla | HotbarX |
+  |---|---|---|
+  | `advancements.toast.task` | Advancement Made! | `§c`Title Acquired! |
+  | `advancements.toast.goal` | Goal Reached! | `§c`Goal Reached! |
+  | `advancements.toast.challenge` | Challenge Complete! | `§c`Challenge Cleared! |
+
 - **Limits:** legacy codes offer only 16 colours (`§c` ≈ `#FF5555`, `§4` = `#AA0000`). A `§` colour also overrides the gray of a disabled button's text. **(verify in-game)**
+
+### 8.2 Tooltips — `textures/gui/sprites/tooltip/` (v0.7) **(verify in 26.3)**
+
+`background.png` and `frame.png` are 100×100 nine-slices (borders 9 and 10, the frame with `stretch_inner`), drawn 12 px out from the text on every side. The box itself spans 8–91 in both; the 8 px outside it are a margin that only the brackets use. The vanilla `.mcmeta` ship with them.
+
+- **Background:** `obsidian` at α `0xF0` over the box, with its three corner pixels cut (a chamfer).
+- **Frame:** a 1 px line on the box edge and the chamfer: `crimson-600` along the top (the "title bar"), `blood` elsewhere. One ring inside it, a `blood-900` glow. Text starts 2 px inside the glow.
+- **Lock-on brackets:** an L 2 px outside each corner with 4 px arms: `core` on the corner, then `crimson-hot`, ending in `crimson-600`. They stay inside the frame's 10 px corner, so they never stretch.
+- The vanilla frame is purple (G ≠ B), so it failed the strict palette check.
+
+### 8.3 Toasts — `textures/gui/sprites/toast/` (v0.7) **(verify in 26.3)**
+
+| Sprite | Size, scaling | Design |
+|---|---|---|
+| `advancement` | 160×32, drawn 1:1 | A framed panel: the §5.2 rings, corner guards without side arms (§5.7), and four arcs on the long sides. Text-safe zone (6,6)–(153,25). The header is crimson through lang (§8.1); the description stays white. |
+| `recipe` | 160×32, drawn 1:1 | `RecipeToast` draws its text in `#500050` and black, set in code. A dark toast would hide it, so this one is a **light steel plate**: `void` outline, `blood` line, `steel-400` rim, `steel-200` face, and a 2×2 rivet in each corner. Black text on it is 12.6:1. |
+| `tutorial` | 160×32, nine-slice border 3 | The same light steel plate without rivets, for the same reason (its text is dark too). |
+| `now_playing` | 160×32, nine-slice border 4 | Recoloured: `void` outline, `blood` border, `obsidian` fill. |
+| `system` | 160×64, nine-slice (L17 T30 R4 B4) | Recoloured: `obsidian` fill, `blood` border. The yellow "!" (`#CAB60D`) becomes `crimson` with a `blood-700` shade and a `core` glint. |
+
+Toasts that need a nine-slice keep their vanilla `.mcmeta`.
 
 ## 9. Items — `textures/item/` (16×16, alpha 0/255)
 
@@ -357,13 +417,18 @@ The model is `layer0 = potion_overlay` (tinted by the effect, drawn first) and `
 | `gui/sprites/hud/food_full.png` (hunger bar) | ✗ 13 brown px | Recoloured (§7.5) |
 | `gui/sprites/hud/heart/vehicle_full.png` (mount hearts) | ✗ orange-brown | Recoloured (§7.5) |
 | `item/netherite_sword.png`, `item/potion_overlay.png`, `gui/container/*.png` | ✓ | — |
+| `gui/sprites/toast/system.png` (v0.7 audit, 26.2 jar) | ✗ 26 `#CAB60D` px, the "!" | Recoloured (§8.3) |
+| Advancement toast header text, `#FFFF00` set in code | ✗ yellow text | `§c` through lang (§8.1) |
+| System toast title text, `#FFFF00` set in code | ✗ yellow text | **Stays**: it has many lang keys, and only shows for errors such as a failed world backup |
+| `gui/sprites/tooltip/frame.png` | ✓ no gold, but purple (G ≠ B) | Repainted (§8.2) |
 
 ## 11. Pack layout
 
 ```
 pack/
 ├── pack.mcmeta
-├── pack.png                                      128×128 (drawn at 64×64, shipped at 2×), palette tokens only
+├── pack.png                                      128×128 (drawn at 64×64, shipped at 2×), palette tokens only:
+│                                                 a great helm with a glowing eye slit in the guarded frame
 ├── mc_26_2/assets/minecraft/shaders/core/text.vsh   overlay: 26.2 copy + §5.6 change
 └── assets/minecraft/
     ├── lang/en_us.json
@@ -383,7 +448,12 @@ pack/
         ├── gui/sprites/recipe_book/  button, tab, filter, furnace_filter, page, slot,
         │                             overlay_recipe (+ .mcmeta), crafting/furnace_overlay (30 files)
         ├── gui/sprites/widget/       button, button_highlighted, button_disabled,
-        │                             text_field, text_field_highlighted (+ .mcmeta)
+        │                             text_field, text_field_highlighted,
+        │                             slider, slider_highlighted,
+        │                             slider_handle, slider_handle_highlighted (+ .mcmeta)
+        ├── gui/sprites/tooltip/      background, frame (+ .mcmeta)
+        ├── gui/sprites/toast/        advancement, recipe, tutorial, now_playing, system
+        │                             (+ .mcmeta for the last three)
         └── item/                     golden_apple, potion, splash_potion, lingering_potion, ender_eye
 ```
 
@@ -392,7 +462,7 @@ pack/
 ```json
 {
   "pack": {
-    "description": { "text": "HotbarX - Crimson Obsidian UI", "color": "#FF0000" },
+    "description": { "text": "HotbarX - Crimson Obsidian UI\n", "color": "#FF0000", "extra": [ { "text": "Heavy Knight Edition", "color": "#8C8C8C" } ] },
     "min_format": 88,
     "max_format": 97
   },
@@ -407,7 +477,7 @@ pack/
 This was checked against the games' own metadata codecs, run against the 26.2 and 26.3 jars:
 - **Format range:** both parse it as [88.0, 97.*], which includes 97.1 and 88.0.
 - **Overlay:** 26.3 activates none; 26.2 activates `mc_26_2`.
-- **Not checked:** the description, because its text-component codec needs the full game bootstrap.
+- **Not checked:** the description, because its text-component codec needs the full game bootstrap. Since v0.7 it has a second, `steel-400` line, "Heavy Knight Edition", as an `extra` component. **(verify in-game)**
 
 ## 12. Acceptance tests
 
@@ -426,6 +496,7 @@ The generator reads the vanilla templates from the client jar and writes `pack/`
 - a text-safe zone that isn't flat
 - a `generic_54` seam row that isn't plain
 - a channel or free-area bolt pixel that isn't free
+- a crest over a pixel that isn't plain fill
 
 `--preview` writes enlarged composites for review (including `hud.png`, the survival HUD):
 - chests at 1, 3 and 6 rows
@@ -434,7 +505,7 @@ The generator reads the vanilla templates from the client jar and writes `pack/`
 - buttons at five widths
 - items in slots
 
-`--readme docs\images` writes the README images from the finished textures, laid out as the game draws them: labels in the game font (from the client jar) and in the colours this pack gives them, item stacks with counts, and `hud.gif`, the HUD animated on the same timelines as the `.mcmeta` files. They are committed, so rerun it after every texture change. The images contain a few vanilla item textures from the client jar.
+`--readme docs\images` writes the README images from the finished textures, laid out as the game draws them: labels in the game font (from the client jar) and in the colours this pack gives them, item stacks with counts, a tooltip, `system.png` (toasts, a tooltip and sliders), and `hud.gif`, the HUD animated on the same timelines as the `.mcmeta` files. They are committed, so rerun it after every texture change. The images contain a few vanilla item textures from the client jar.
 
 **In-game** — in 26.3, and once in 26.2 to confirm the overlay shader. Use GUI scale 1–4 and Auto, and run with an Iris shaderpack on and off:
 
@@ -451,11 +522,17 @@ The generator reads the vanilla templates from the client jar and writes `pack/`
   - The Hunger effect makes the drumsticks dull.
   - The XP level number is pale.
   - At an anvil, an affordable cost is pale and "Too Expensive!" is red.
-- [ ] Pause menu: text is red, the hover state works, and buttons look right at different widths (pause menu, Options screen, title screen). No motif is cut off.
+- [ ] Pause menu: text is red, the hover state works, and buttons look right at different widths (pause menu, Options screen, title screen). The chamfered corners and rivets are never cut off.
+- [ ] Options screen: sliders (FOV, volume) show the steel handle at both ends of the track, and hover lights track and handle.
+- [ ] Corner guards: every themed panel shows all four guards, and the corner arcs start at the arm tips.
+- [ ] Tooltips: a one-line and a long multi-line tooltip, near each screen edge. The frame is unbroken, the lock-on brackets sit on all four corners, and the text keeps its gap from the frame.
+- [ ] Toasts: earn an advancement ("Title Acquired!" in red), unlock a recipe (dark text readable on the steel plate), and start a music track with the "Now Playing" toast enabled.
+- [ ] Resource-pack list: the helm icon and the two-line description ("Heavy Knight Edition" in gray).
 - [ ] Potions: Healing and Swiftness liquids still show different colours.
 
 ## 13. Out of scope (v1)
 
-- **Not covered:** modded screens (the profile has ~230 mods), the other vanilla containers (furnaces, anvil, villager, brewing, enchanting, beacon, creative tabs, …), tooltips, fonts and world textures. In the HUD: air bubbles, the horse jump bar and the locator bar.
+- **Not covered:** modded screens (the profile has ~230 mods), the other vanilla containers (furnaces, anvil, villager, brewing, enchanting, beacon, creative tabs, …), fonts and world textures. In the HUD: air bubbles, the horse jump bar and the locator bar.
+- **System toast text:** its title stays yellow (`#FFFF00`, set in code; §10).
 - **Still vanilla:** the status-effect backgrounds still draw over themed screens. The effect panels appear right after eating the Blood Apple. They pass the palette check (no gold), but they stay vanilla gray.
 - **Interim look:** with the shader active, labels on the unthemed containers turn `#FF0000` on light gray (2.3:1). They stay readable, but contrast is low until those screens are themed.

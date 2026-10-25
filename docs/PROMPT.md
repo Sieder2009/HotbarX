@@ -36,6 +36,13 @@ Deliver:
    crimson/black. Poisoned, withered and frozen hearts stay vanilla.
 8. Recipe book: obsidian panel with lightning frame, crimson search lens, red book button, tabs,
    toggles, page arrows and variant popup. Craftable recipes glow; uncraftable ones go dim.
+9. Heavy Knight update (v0.7, inspired by "The Exiled Heavy Knight Knows How to Game the System";
+   motifs only, no names or logos): riveted steel corner guards with a crimson inlay on every panel,
+   lightning bursting from the guard tips, a tower-shield crest struck by lightning in the empty areas,
+   steel plate buttons with cut corners and rivets, riveted straps between hotbar slots, steel armor
+   icons, steel slider handles, tooltips as "system windows" with lock-on corner brackets, guarded
+   advancement toasts headed "Title Acquired!", and a great-helm pack icon. Steel uses only the
+   four steel tokens (SPEC section 4).
 
 Done when `tools/Test-Palette.ps1 pack -Strict` exits 0 and every in-game check in SPEC section 12 passes.
 ```
@@ -49,7 +56,9 @@ Minecraft Java Edition GUI resource pack concept sheet, crisp pixel art, nearest
 flat orthographic UI, no perspective. Dark fantasy theme: matte obsidian-black panels (#0A0A0A),
 thin dark blood-red borders (#990000), vibrant crimson (#FF0000) glow accents. Jagged one-pixel
 electric-red lightning arcs with pale pink-white cores crackle along the outer edges of every panel
-and link the nine hotbar slots, with a faint red aura around the arcs. Shown: player inventory with
+and link the nine hotbar slots, with a faint red aura around the arcs. Heavy-knight armour accents:
+riveted cold-steel corner guards with a glowing crimson inlay on every panel, a small tower-shield
+crest with a crimson sword, steel plate buttons with cut corners. Shown: player inventory with
 crafting grid and the recipe book open beside it, six-row chest, hotbar with the selected slot
 glowing crimson, "Resume Game" and "Options" buttons with crimson text, a glowing crimson blood
 apple, a potion and an eye of ender crackling with red sparks. Clean, high contrast, readable,
